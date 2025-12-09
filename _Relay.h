@@ -8,6 +8,7 @@
       //Serial.println(Data);
       digitalWrite(latchPin, LOW);
       shiftOut(dataPin, clockPin, MSBFIRST, (Data >> 8));
+      yield(); // Allow background tasks between shift operations
       shiftOut(dataPin, clockPin, MSBFIRST, Data);
       //return the latch pin high to signal chip that it
       //no longer needs to listen for information

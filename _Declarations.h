@@ -11,9 +11,9 @@
 
 const bool relay_NC = false;  // if true the NC is connected to the com by default and the relay led is on
 
-String ControlBoard = "1"; // 
-String BLKA = "01";   // Block control A   Board 1 BLKA=01 
-String BLKB = "02";   // Block control B   Board 1 BLKB=02
+const char* ControlBoard = "1"; // Changed from String to const char*
+const char* BLKA = "01";   // Block control A   Board 1 BLKA=01 
+const char* BLKB = "02";   // Block control B   Board 1 BLKB=02
 int BLK_Status[2][3] = { {1,1,0}, {1,2,0} };
 /*
 BLK_Status[0][0] = 1; // Control Board
@@ -49,7 +49,14 @@ int latchPin = 12;  // Latch pin of 74HC595 (12) is connected to Digital pin 5 S
 int clockPin = 13; // Clock pin of 74HC595 (11) is connected to Digital pin 6
 int dataPin = 14;  // Data pin of 74HC595 (14) is connected to Digital pin 4
 int oePin = 5;    // oePin - not using this
-uint16_t Data; 
+uint16_t Data;
+bool relayBusy = false; // Race condition protection flag
+unsigned long relayBusyTimestamp = 0; // Timestamp when relay became busy
+const unsigned long RELAY_TIMEOUT = 5000; // 5 second timeout for stuck relay
+unsigned long requestCount = 0; // Track number of requests for cleanup
+const unsigned long MAX_REQUESTS_BEFORE_CLEANUP = 500; // Reset after 500 requests
+bool handlerInProgress = false; // Track if handler is currently executing
+unsigned long lastHandlerStart = 0; // When last handler started
 const uint16_t R0F = 0b0000000000000000;
 const uint16_t R0G = 0b1111111111111111;
 const uint16_t RG1 = 0b0000000000111111;

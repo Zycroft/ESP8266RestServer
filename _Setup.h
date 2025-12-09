@@ -9,10 +9,12 @@ void handleNotFound()
         http_rest_server.sendHeader("Access-Control-Max-Age", "10000");
         http_rest_server.sendHeader("Access-Control-Allow-Methods", "PUT,POST,GET,OPTIONS");
         http_rest_server.sendHeader("Access-Control-Allow-Headers", "*");
+        http_rest_server.sendHeader("Connection", "close");
         http_rest_server.send(204);
     }
     else
     {
+        http_rest_server.sendHeader("Connection", "close");
         http_rest_server.send(404, "text/plain", "");
     }
 }
@@ -21,7 +23,8 @@ void config_rest_server_routing() {
   // Handler for CORS preflight requests (OPTIONS)
 
     http_rest_server.on("/", HTTP_GET, []() {
-        http_rest_server.sendHeader("Access-Control-Allow-Origin", "*", 1);
+        http_rest_server.sendHeader("Access-Control-Allow-Origin", "*");
+        http_rest_server.sendHeader("Connection", "close");
         http_rest_server.send(200, "text/html",
             "Welcome to the ESP8266 REST Web Server");
     });
@@ -42,20 +45,36 @@ int init_wifi() {
     Serial.println("Connecting to WiFi AP..........");
 
     WiFi.mode(WIFI_STA);
+    WiFi.setAutoReconnect(true); // Enable auto-reconnect
+    WiFi.persistent(false); // Reduce flash writes for longevity
+    WiFi.setSleepMode(WIFI_NONE_SLEEP); // CRITICAL: Disable WiFi sleep to prevent disconnections
+    WiFi.setOutputPower(20.5); // Max power for stable connection
     WiFi.begin(wifi_ssid, wifi_passwd);
-    // check the status of WiFi connection to be WL_CONNECTED
-    while ((WiFi.status() != WL_CONNECTED) && (retries < MAX_WIFI_INIT_RETRY)) {
+    
+    // Reduced timeout: 40 retries * 500ms = 20 seconds (was 4+ minutes)
+    while ((WiFi.status() != WL_CONNECTED) && (retries < 40)) {
         retries++;
         delay(WIFI_RETRY_DELAY);
-        Serial.print("#");
+        Serial.print(".");
+        yield(); // Prevent watchdog timeout during long wait
     }
+    Serial.println();
+    
+    if (WiFi.status() == WL_CONNECTED) {
+        // Configure for stability
+        WiFi.setAutoConnect(true);
+    }
+    
     return WiFi.status(); // return the WiFi connection status
 }
 
 void setup(void) {
     Serial.begin(115200);
-      delay(10);
+    delay(10);
     Serial.println("#");
+    
+    ESP.wdtDisable(); // Disable watchdog during setup
+    ESP.wdtEnable(8000); // Re-enable with 8 second timeout
 
     // Set all the pins of 74HC595 as OUTPUT
     pinMode(latchPin, OUTPUT);
