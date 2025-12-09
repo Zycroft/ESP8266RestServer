@@ -55,6 +55,7 @@ int init_wifi() {
 void setup(void) {
     Serial.begin(115200);
       delay(10);
+    Serial.println("#");
 
     // Set all the pins of 74HC595 as OUTPUT
     pinMode(latchPin, OUTPUT);

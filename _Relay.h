@@ -16,8 +16,11 @@
 
 
 void relaysOff() {
-  Data = Data | R0G;
-  //Data = Data & R0F;
+  if (relay_NC) { 
+    Data = Data | R0G;
+  } else {
+    Data = Data & R0F;
+  }
   //Serial.println("********RelayOff********");
   //Serial.println(Data,BIN);
   SetRelay();

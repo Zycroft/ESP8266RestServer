@@ -9,6 +9,7 @@
 // Block control A   Board 1 BLKA=01 Board 2 BLKA=03 Board 3 BLKA=05 Board 4 BLKA=07 
 // Block control B   Board 1 BLKB=02 Board 2 BLKB=04 Board 3 BLKB=06 Board 4 BLKB=08
 
+const bool relay_NC = false;  // if true the NC is connected to the com by default and the relay led is on
 
 String ControlBoard = "1"; // 
 String BLKA = "01";   // Block control A   Board 1 BLKA=01 
